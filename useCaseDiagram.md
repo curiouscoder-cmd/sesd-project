@@ -6,39 +6,7 @@
 
 ## Diagram
 
-```mermaid
-graph TD
-    User((User))
-
-    UC1[Register]
-    UC2[Login]
-    UC3[Create Group]
-    UC4[Add Members to Group]
-    UC5[View Groups]
-    UC6[Add Expense]
-    UC7[Choose Split Type]
-    UC8[View Expenses]
-    UC9[View Balances]
-    UC10[Settle Up]
-    UC11[View Dashboard]
-
-    User --> UC1
-    User --> UC2
-    User --> UC3
-    User --> UC4
-    User --> UC5
-    User --> UC6
-    User --> UC8
-    User --> UC9
-    User --> UC10
-    User --> UC11
-
-    UC6 --> UC7
-
-    UC7 --> ST1[Equal Split]
-    UC7 --> ST2[Exact Split]
-    UC7 --> ST3[Percentage Split]
-```
+![alt text](image-1.png)
 
 ## Use Case Descriptions
 
