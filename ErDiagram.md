@@ -4,67 +4,7 @@
 
 Here's how the database is structured. Using MySQL.
 
-```mermaid
-erDiagram
-    users {
-        BIGINT id PK
-        VARCHAR name
-        VARCHAR email UK
-        VARCHAR password
-        DATETIME created_at
-    }
-
-    groups {
-        BIGINT id PK
-        VARCHAR name
-        BIGINT created_by FK
-        DATETIME created_at
-    }
-
-    group_members {
-        BIGINT id PK
-        BIGINT group_id FK
-        BIGINT user_id FK
-        DATETIME joined_at
-    }
-
-    expenses {
-        BIGINT id PK
-        VARCHAR description
-        DOUBLE amount
-        BIGINT paid_by FK
-        BIGINT group_id FK
-        ENUM split_type
-        DATETIME created_at
-    }
-
-    splits {
-        BIGINT id PK
-        BIGINT expense_id FK
-        BIGINT user_id FK
-        DOUBLE amount
-    }
-
-    settlements {
-        BIGINT id PK
-        BIGINT paid_by FK
-        BIGINT paid_to FK
-        BIGINT group_id FK
-        DOUBLE amount
-        DATETIME created_at
-    }
-
-    users ||--o{ groups : "creates"
-    users ||--o{ group_members : "joins"
-    groups ||--o{ group_members : "has"
-    groups ||--o{ expenses : "contains"
-    users ||--o{ expenses : "pays"
-    expenses ||--o{ splits : "split into"
-    users ||--o{ splits : "owes"
-    users ||--o{ settlements : "pays"
-    users ||--o{ settlements : "receives"
-    groups ||--o{ settlements : "belongs to"
-```
+![alt text](image-3.png)
 
 ## Table Descriptions
 
