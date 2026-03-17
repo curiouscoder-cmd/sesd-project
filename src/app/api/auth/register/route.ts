@@ -2,6 +2,8 @@ import { NextRequest } from "next/server"
 import { AuthService } from "@/lib/services/AuthService"
 import { successResponse, errorResponse } from "@/lib/utils/response"
 
+import { isValidEmail } from "@/lib/utils/validators"
+
 const authService = new AuthService()
 
 export async function POST(req: NextRequest) {
@@ -11,6 +13,10 @@ export async function POST(req: NextRequest) {
 
     if (!name || !email || !password) {
       return errorResponse("Name, email and password are required", 400)
+    }
+
+    if (!isValidEmail(email)) {
+      return errorResponse("Invalid email format", 400)
     }
 
     if (password.length < 6) {
