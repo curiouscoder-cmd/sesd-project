@@ -22,3 +22,26 @@ export async function GET(req: NextRequest, { params }: { params: { groupId: str
     return errorResponse(message, status)
   }
 }
+
+export async function PATCH(req: NextRequest, { params }: { params: { groupId: string } }) {
+  try {
+    const auth = await withAuth(req)
+    const groupId = parseInt(params.groupId)
+
+    if (isNaN(groupId)) {
+      return errorResponse("Invalid group ID", 400)
+    }
+
+    const body = await req.json()
+    if (!body.name || body.name.trim().length === 0) {
+      return errorResponse("Group name is required", 400)
+    }
+
+    const updatedGroup = await groupService.updateGroup(groupId, { name: body.name.trim() }, auth.userId)
+    return successResponse(updatedGroup)
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to update group"
+    const status = message.includes("authenticated") ? 401 : 400
+    return errorResponse(message, status)
+  }
+}
