@@ -16,6 +16,20 @@ export class GroupService {
       data: { name: input.name },
     })
   }
+
+  async deleteGroup(groupId: number, userId: number) {
+    const group = await prisma.group.findFirst({
+      where: { id: groupId, createdBy: userId },
+    })
+
+    if (!group) {
+      throw new Error("Only the group creator can delete this group")
+    }
+
+    await prisma.group.delete({
+      where: { id: groupId },
+    })
+  }
   async createGroup(input: CreateGroupInput, userId: number) {
     const group = await prisma.group.create({
       data: {
