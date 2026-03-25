@@ -141,4 +141,24 @@ export class GroupService {
     })
     return userToAdd
   }
+
+  async removeMember(groupId: number, userIdToRemove: number, requesterId: number) {
+    const group = await prisma.group.findFirst({
+      where: { id: groupId, createdBy: requesterId },
+    })
+
+    if (!group) {
+      throw new Error("Only the group creator can remove members")
+    }
+
+    if (userIdToRemove === requesterId) {
+      throw new Error("Group creator cannot be removed")
+    }
+
+    await prisma.groupMember.delete({
+      where: {
+        groupId_userId: { groupId, userId: userIdToRemove },
+      },
+    })
+  }
 }
