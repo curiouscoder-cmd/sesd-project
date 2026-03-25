@@ -1,7 +1,21 @@
 import prisma from "@/lib/db"
-import { CreateGroupInput } from "@/lib/types"
+import { CreateGroupInput, UpdateGroupInput } from "@/lib/types"
 
 export class GroupService {
+  async updateGroup(groupId: number, input: UpdateGroupInput, userId: number) {
+    const group = await prisma.group.findFirst({
+      where: { id: groupId, createdBy: userId },
+    })
+
+    if (!group) {
+      throw new Error("Only the group creator can update the group")
+    }
+
+    return prisma.group.update({
+      where: { id: groupId },
+      data: { name: input.name },
+    })
+  }
   async createGroup(input: CreateGroupInput, userId: number) {
     const group = await prisma.group.create({
       data: {
@@ -111,7 +125,6 @@ export class GroupService {
     await prisma.groupMember.create({
       data: { groupId, userId: userToAdd.id },
     })
-
     return userToAdd
   }
 }
