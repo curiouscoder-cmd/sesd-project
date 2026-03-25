@@ -18,6 +18,10 @@ export interface CreateGroupInput {
   name: string
 }
 
+export interface UpdateGroupInput {
+  name: string
+}
+
 export interface AddMemberInput {
   email: string
 }
