@@ -45,3 +45,21 @@ export async function PATCH(req: NextRequest, { params }: { params: { groupId: s
     return errorResponse(message, status)
   }
 }
+
+export async function DELETE(req: NextRequest, { params }: { params: { groupId: string } }) {
+  try {
+    const auth = await withAuth(req)
+    const groupId = parseInt(params.groupId)
+
+    if (isNaN(groupId)) {
+      return errorResponse("Invalid group ID", 400)
+    }
+
+    await groupService.deleteGroup(groupId, auth.userId)
+    return successResponse({ message: "Group deleted" })
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to delete group"
+    const status = message.includes("authenticated") ? 401 : 400
+    return errorResponse(message, status)
+  }
+}
