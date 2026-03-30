@@ -61,6 +61,7 @@ model Expense {
   groupId     Int
   splitType   SplitType
   createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   paidBy Group   @relation(fields: [groupId], references: [id])
   group  User    @relation("ExpensePaidBy", fields: [paidById], references: [id])
