@@ -45,6 +45,7 @@ model GroupMember {
   groupId  Int
   userId   Int
   joinedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   group Group @relation(fields: [groupId], references: [id])
   user  User  @relation(fields: [userId], references: [id])
