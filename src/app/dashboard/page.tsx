@@ -143,6 +143,24 @@ export default function AetherDashboard() {
                                         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
                                     </FrostCard>
                                 </div>
+
+                                {/* Quick Stat */}
+                                <FrostCard delay={0.1} className="flex flex-col justify-between">
+                                    <div className="flex justify-between items-start">
+                                        <div className="p-2 bg-rose-100 rounded-xl text-rose-600">
+                                            <Zap className="h-6 w-6" />
+                                        </div>
+                                        <button className="text-slate-400 hover:text-slate-600"><MoreVertical className="h-5 w-5" /></button>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-slate-500 mb-1">Total Revenue</p>
+                                        <h3 className="text-3xl font-bold text-slate-800">$124,592</h3>
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <StatPill val="12.5%" positive />
+                                            <span className="text-xs text-slate-400">vs last month</span>
+                                        </div>
+                                    </div>
+                                </FrostCard>
                             </div>
                         )}
                     </div>
