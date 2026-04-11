@@ -75,7 +75,42 @@ export default function AetherDashboard() {
 
                 {/* Main Content Area */}
                 <main className="flex-1 flex flex-col gap-6 relative min-w-0">
-                    <header className="h-20" /> {/* Placeholder for next commits */}
+
+                    {/* Floating Header */}
+                    <motion.header
+                        initial={{ y: -20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        className="flex items-center justify-between rounded-[32px] border border-white/60 bg-white/40 px-6 py-4 backdrop-blur-xl shadow-sm"
+                    >
+                        <div className="flex items-center gap-4">
+                            <h1 className="text-xl font-bold tracking-tight text-slate-800">Overview</h1>
+                            <div className="hidden lg:flex items-center gap-2 rounded-full bg-white/50 px-3 py-1.5 text-sm text-slate-500 border border-white/50 shadow-inner">
+                                <Search className="h-4 w-4" />
+                                <span className="pr-8">Search analytics...</span>
+                                <div className="flex items-center gap-1 rounded bg-white px-1.5 py-0.5 text-[10px] font-bold shadow-sm">
+                                    <Command className="h-3 w-3" /> K
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                            <button className="relative rounded-full bg-white p-2.5 shadow-sm hover:scale-105 transition-transform">
+                                <Bell className="h-5 w-5 text-slate-600" />
+                                <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-rose-500 border border-white" />
+                            </button>
+                            <div className="flex items-center gap-3 rounded-full bg-white pl-1 pr-4 py-1 shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition-shadow">
+                                <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Felix" className="h-9 w-9 rounded-full bg-indigo-100" />
+                                <div className="hidden sm:block">
+                                    <p className="text-sm font-bold leading-none">Alex D.</p>
+                                    <p className="text-xs text-slate-400">Pro Plan</p>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.header>
+
+                    {/* Dashboard Grid Container */}
+                    <div className="flex-1 overflow-y-auto rounded-[32px] pr-2 pb-2 scrollbar-hide">
+                    </div>
                 </main>
             </div>
         </div>
