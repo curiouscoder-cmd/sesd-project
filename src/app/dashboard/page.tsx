@@ -110,6 +110,41 @@ export default function AetherDashboard() {
 
                     {/* Dashboard Grid Container */}
                     <div className="flex-1 overflow-y-auto rounded-[32px] pr-2 pb-2 scrollbar-hide">
+                        {activeTab === 0 && (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                                {/* Welcome Section */}
+                                <div className="md:col-span-2">
+                                    <FrostCard className="h-full flex flex-col justify-center bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-none shadow-lg shadow-indigo-500/20">
+                                        <div className="relative z-10 p-2">
+                                            <motion.div
+                                                initial={{ opacity: 0, x: -20 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ delay: 0.2 }}
+                                            >
+                                                <span className="inline-block rounded-full bg-white/20 px-3 py-1 text-xs font-medium backdrop-blur-md mb-4 border border-white/10">
+                                                    Uilora Analytics Online
+                                                </span>
+                                                <h2 className="text-3xl font-bold mb-2">Welcome to Uilora, Alex!</h2>
+                                                <p className="text-indigo-100 max-w-lg mb-6 text-sm leading-relaxed">
+                                                    Your Uilora dashboard user retention has increased by <span className="font-bold text-white">12%</span> this week. We've optimized your Uilora components for better visibility.
+                                                </p>
+                                                <div className="flex gap-3">
+                                                    <button className="rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-indigo-600 shadow-xl shadow-black/10 hover:scale-105 transition-transform">
+                                                        View Uilora Report
+                                                    </button>
+                                                    <button className="rounded-xl bg-indigo-600/50 px-5 py-2.5 text-sm font-bold text-white hover:bg-indigo-600/70 transition-colors">
+                                                        Dismiss
+                                                    </button>
+                                                </div>
+                                            </motion.div>
+                                        </div>
+                                        {/* Decor */}
+                                        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+                                    </FrostCard>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </main>
             </div>
