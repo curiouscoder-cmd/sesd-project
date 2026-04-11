@@ -161,6 +161,52 @@ export default function AetherDashboard() {
                                         </div>
                                     </div>
                                 </FrostCard>
+
+                                {/* Main Chart */}
+                                <FrostCard delay={0.2} className="md:col-span-2 min-h-[350px]">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <div>
+                                            <h3 className="text-lg font-bold text-slate-800">Uilora Performance</h3>
+                                            <p className="text-sm text-slate-400">Revenue vs Active Users</p>
+                                        </div>
+                                        <div className="flex gap-2 p-1 bg-slate-100 rounded-xl">
+                                            {(['Daily', 'Monthly', 'Yearly'] as ChartRange[]).map((t) => (
+                                                <button 
+                                                    key={t} 
+                                                    onClick={() => setChartRange(t)}
+                                                    className={cn("px-3 py-1 text-xs font-semibold rounded-lg transition-all", chartRange === t ? "bg-white shadow-sm text-slate-800" : "text-slate-400 hover:text-slate-600")}
+                                                >
+                                                    {t}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="h-[250px] w-full">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <AreaChart data={chartData[chartRange]}>
+                                                <defs>
+                                                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2} />
+                                                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                                                    </linearGradient>
+                                                    <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="5%" stopColor="#ec4899" stopOpacity={0.2} />
+                                                        <stop offset="95%" stopColor="#ec4899" stopOpacity={0} />
+                                                    </linearGradient>
+                                                </defs>
+                                                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                                                <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} dy={10} />
+                                                <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `$${v}`} />
+                                                <Tooltip
+                                                    contentStyle={{ backgroundColor: "#fff", border: "none", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
+                                                    itemStyle={{ fontSize: "12px", fontWeight: "bold" }}
+                                                />
+                                                <Area type="monotone" dataKey="revenue" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
+                                                <Area type="monotone" dataKey="users" stroke="#ec4899" strokeWidth={3} fillOpacity={1} fill="url(#colorUsers)" />
+                                            </AreaChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </FrostCard>
                             </div>
                         )}
                     </div>
