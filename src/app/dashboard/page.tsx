@@ -207,6 +207,38 @@ export default function AetherDashboard() {
                                         </ResponsiveContainer>
                                     </div>
                                 </FrostCard>
+
+                                {/* Task List */}
+                                <FrostCard delay={0.3} className="flex flex-col">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <h3 className="text-lg font-bold text-slate-800">Tasks</h3>
+                                        <button className="bg-black text-white rounded-full p-1"><Plus className="h-4 w-4" /></button>
+                                    </div>
+                                    <div className="flex flex-col gap-3 flex-1 overflow-y-auto">
+                                        {[
+                                            { title: "Review Q3 Report", time: "10:00 AM", done: false, tag: "Urgent" },
+                                            { title: "Client Meeting", time: "11:30 AM", done: true, tag: "Call" },
+                                            { title: "Update Figma", time: "2:00 PM", done: false, tag: "Design" },
+                                            { title: "Team Sync", time: "4:00 PM", done: false, tag: "General" },
+                                        ].map((task, i) => (
+                                            <div key={i} className="group flex items-center gap-3 p-3 rounded-2xl hover:bg-white/50 transition-colors border border-transparent hover:border-white/50 cursor-pointer">
+                                                <button className={cn("h-5 w-5 rounded-full border-2 flex items-center justify-center transition-colors", task.done ? "bg-black border-black text-white" : "border-slate-300 text-transparent hover:border-black")}>
+                                                    <CheckCircle2 className="h-3 w-3" />
+                                                </button>
+                                                <div className="flex-1">
+                                                    <p className={cn("text-sm font-semibold transition-all", task.done ? "text-slate-400 line-through" : "text-slate-800")}>{task.title}</p>
+                                                    <div className="flex items-center gap-2 text-[10px] text-slate-400">
+                                                        <Clock className="h-3 w-3" />
+                                                        {task.time}
+                                                    </div>
+                                                </div>
+                                                <span className="text-[10px] px-2 py-1 bg-slate-100 rounded-lg font-medium text-slate-500 group-hover:bg-white transition-colors">
+                                                    {task.tag}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </FrostCard>
                             </div>
                         )}
                     </div>
