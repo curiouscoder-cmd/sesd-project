@@ -307,6 +307,72 @@ export default function AetherDashboard() {
                                 </div>
                             </div>
                         )}
+
+                        {activeTab === 1 && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <FrostCard delay={0.1} className="flex flex-col min-h-[400px]">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <div>
+                                            <h3 className="text-lg font-bold text-slate-800">Uilora Acquisitions</h3>
+                                            <p className="text-sm text-slate-400">Monthly new users</p>
+                                        </div>
+                                        <button className="text-slate-400 hover:text-slate-600"><MoreVertical className="h-5 w-5" /></button>
+                                    </div>
+                                    <div className="flex-1 w-full min-h-0">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <AreaChart data={chartData['Monthly']}>
+                                                <defs>
+                                                    <linearGradient id="acqColor" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
+                                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                                    </linearGradient>
+                                                </defs>
+                                                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                                                <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} dy={10} />
+                                                <Tooltip
+                                                    contentStyle={{ backgroundColor: "#fff", border: "none", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
+                                                    itemStyle={{ fontSize: "12px", fontWeight: "bold" }}
+                                                />
+                                                <Area type="monotone" dataKey="users" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#acqColor)" />
+                                            </AreaChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </FrostCard>
+
+                                <FrostCard delay={0.2} className="flex flex-col min-h-[400px]">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <div>
+                                            <h3 className="text-lg font-bold text-slate-800">Uilora Traffic</h3>
+                                            <p className="text-sm text-slate-400">Sources overview</p>
+                                        </div>
+                                        <button className="text-slate-400 hover:text-slate-600"><MoreVertical className="h-5 w-5" /></button>
+                                    </div>
+                                    <div className="flex-1 flex flex-col justify-center gap-6">
+                                        {[
+                                            { source: "Direct", percent: 45, color: "bg-indigo-500" },
+                                            { source: "Organic Search", percent: 30, color: "bg-purple-500" },
+                                            { source: "Referral", percent: 15, color: "bg-rose-500" },
+                                            { source: "Social Media", percent: 10, color: "bg-emerald-500" }
+                                        ].map((s, i) => (
+                                            <div key={i} className="space-y-2">
+                                                <div className="flex justify-between text-sm font-semibold text-slate-700">
+                                                    <span>{s.source}</span>
+                                                    <span>{s.percent}%</span>
+                                                </div>
+                                                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                                                    <motion.div
+                                                        initial={{ width: 0 }}
+                                                        animate={{ width: `${s.percent}%` }}
+                                                        transition={{ duration: 1, delay: i * 0.1 }}
+                                                        className={cn("h-full rounded-full", s.color)}
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </FrostCard>
+                            </div>
+                        )}
                     </div>
                 </main>
             </div>
