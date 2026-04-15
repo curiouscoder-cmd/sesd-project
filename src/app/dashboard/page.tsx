@@ -395,6 +395,68 @@ export default function AetherDashboard() {
                                 ))}
                             </div>
                         )}
+
+                        {activeTab === 3 && (
+                            <div className="flex h-[600px] gap-6">
+                                <FrostCard delay={0.1} className="w-80 flex flex-col p-4">
+                                    <div className="flex items-center gap-3 bg-white/50 border border-slate-200 rounded-xl px-4 py-2 mb-6">
+                                        <Search className="h-4 w-4 text-slate-400" />
+                                        <input type="text" placeholder="Search Uilora Mails..." className="bg-transparent border-none outline-none text-sm w-full text-slate-700" />
+                                    </div>
+                                    <div className="flex-1 overflow-y-auto pr-2 space-y-2">
+                                        {[
+                                            { sender: "Uilora Team", subject: "Welcome to Premium", prev: "We are thrilled to...", active: true },
+                                            { sender: "Design Weekly", subject: "New Frost UI Kits", prev: "Check out the latest component updates...", active: false },
+                                            { sender: "Alex D.", subject: "Project Sync", prev: "Can we review the charts layout?", active: false },
+                                        ].map((m, i) => (
+                                            <div key={i} className={cn("p-4 rounded-2xl cursor-pointer transition-colors border border-transparent", m.active ? "bg-white shadow-sm border-white" : "hover:bg-white/40 hover:border-white/50")}>
+                                                <div className="flex justify-between items-start mb-1">
+                                                    <h4 className="font-bold text-sm text-slate-800">{m.sender}</h4>
+                                                    <span className="text-[10px] text-slate-400 font-medium">10:42 AM</span>
+                                                </div>
+                                                <p className="text-xs font-semibold text-slate-600 mb-1">{m.subject}</p>
+                                                <p className="text-xs text-slate-400 truncate">{m.prev}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </FrostCard>
+                                <FrostCard delay={0.2} className="flex-1 flex flex-col p-8">
+                                    <div className="flex items-center justify-between border-b border-slate-200/50 pb-6 mb-6">
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500 font-bold text-lg">
+                                                U
+                                            </div>
+                                            <div>
+                                                <h2 className="text-xl font-bold text-slate-800 mb-1">Welcome to Premium</h2>
+                                                <p className="text-sm font-medium text-slate-400">From: <span className="text-indigo-500">Uilora Team</span> &lt;team@uilora.com&gt;</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 border border-slate-200 hover:text-slate-800 hover:bg-white transition-colors">
+                                                <MoreVertical className="h-5 w-5" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 text-slate-600 text-sm leading-relaxed max-w-2xl">
+                                        <p className="mb-4">Hi Alex,</p>
+                                        <p className="mb-4">We are thrilled to welcome you to Uilora Premium. Your dashboard is now utilizing the incredible Frost layout pattern powered by our mesh gradient technology.</p>
+                                        <p className="mb-4">You now have access to:</p>
+                                        <ul className="list-disc pl-5 mb-6 space-y-2 text-slate-700 font-medium">
+                                            <li>Extensive Chart Interactions (Daily, Monthly, Yearly)</li>
+                                            <li>Micro-interactions and Frost Cards</li>
+                                            <li>Premium Support</li>
+                                        </ul>
+                                        <p className="mb-4">Let us know if you need anything.</p>
+                                        <p className="font-bold mt-8">Best,<br/>The Uilora Team</p>
+                                    </div>
+                                    <div className="mt-6 pt-6 border-t border-slate-200/50">
+                                        <button className="bg-slate-800 text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-black transition-colors shadow-sm">
+                                            Reply to Thread
+                                        </button>
+                                    </div>
+                                </FrostCard>
+                            </div>
+                        )}
                     </div>
                 </main>
             </div>
