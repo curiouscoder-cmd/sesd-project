@@ -25,7 +25,7 @@ export const MeshGradient = () => (
       position: absolute;
       filter: blur(80px);
       opacity: 0.6;
-      animation: float 10s infinite ease-in-out;
+      animation: float 15s infinite ease-in-out;
     }
     .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #bfdbfe; animation-delay: 0s; } /* Blue */
     .blob-2 { bottom: -10%; right: -10%; width: 50vw; height: 50vw; background: #e9d5ff; animation-delay: 2s; } /* Purple */
