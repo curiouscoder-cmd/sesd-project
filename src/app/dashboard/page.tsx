@@ -373,6 +373,28 @@ export default function AetherDashboard() {
                                 </FrostCard>
                             </div>
                         )}
+
+                        {activeTab === 2 && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {[1, 2, 3, 4, 5, 6].map((u) => (
+                                    <FrostCard key={u} delay={u * 0.1} className="flex flex-col items-center text-center">
+                                        <div className="w-20 h-20 rounded-full overflow-hidden bg-slate-100 mb-4 shadow-sm border-2 border-white">
+                                            <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=Uilora${u}`} className="w-full h-full object-cover" />
+                                        </div>
+                                        <h3 className="text-lg font-bold text-slate-800">Uilora User {u}</h3>
+                                        <p className="text-sm text-slate-400 font-medium mb-6">Software Engineer</p>
+                                        <div className="flex gap-3 w-full">
+                                            <button className="flex-1 bg-indigo-50 text-indigo-600 py-2 rounded-xl text-sm font-semibold hover:bg-indigo-100 transition-colors">
+                                                Profile
+                                            </button>
+                                            <button className="flex-1 bg-slate-800 text-white py-2 rounded-xl text-sm font-semibold hover:bg-black transition-colors">
+                                                Message
+                                            </button>
+                                        </div>
+                                    </FrostCard>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </main>
             </div>
