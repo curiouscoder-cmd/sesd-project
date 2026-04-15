@@ -109,7 +109,7 @@ export default function AetherDashboard() {
                     </motion.header>
 
                     {/* Dashboard Grid Container */}
-                    <div className="flex-1 overflow-y-auto rounded-[32px] pr-2 pb-2 scrollbar-hide">
+                    <div className="flex-1 overflow-y-auto rounded-[32px] pr-2 pb-2 scrollbar-hide px-4 md:px-0">
                         {activeTab === 0 && (
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
