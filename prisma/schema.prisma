@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -57,10 +57,10 @@ model GroupMember {
 model Expense {
   id          Int       @id @default(autoincrement())
   description String
-  amount      Decimal   @db.Decimal(10, 2)
+  amount      Decimal
   paidById    Int
   groupId     Int
-  splitType   SplitType
+  splitType   String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -75,7 +75,7 @@ model Split {
   id        Int     @id @default(autoincrement())
   expenseId Int
   owesId    Int
-  amount    Decimal @db.Decimal(10, 2)
+  amount    Decimal
 
   expense Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
   owes    User    @relation("SplitOwes", fields: [owesId], references: [id])
@@ -88,7 +88,7 @@ model Settlement {
   groupId   Int
   paidById  Int
   paidToId  Int
-  amount    Decimal  @db.Decimal(10, 2)
+  amount    Decimal
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -97,10 +97,4 @@ model Settlement {
   paidTo User  @relation("SettlementPaidTo", fields: [paidToId], references: [id])
 
   @@map("settlements")
-}
-
-enum SplitType {
-  EQUAL
-  EXACT
-  PERCENTAGE
 }
