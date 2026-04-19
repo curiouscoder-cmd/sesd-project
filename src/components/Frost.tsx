@@ -3,36 +3,6 @@ import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// --- Global CSS for Mesh Gradient ---
-export const MeshGradient = () => (
-    <style jsx global>{`
-    @keyframes float {
-      0% { transform: translate(0px, 0px) scale(1); }
-      33% { transform: translate(30px, -50px) scale(1.1); }
-      66% { transform: translate(-20px, 20px) scale(0.9); }
-      100% { transform: translate(0px, 0px) scale(1); }
-    }
-    
-    .mesh-bg {
-      background-color: #f8fafc; /* Slate 50 */
-      position: fixed;
-      inset: 0;
-      z-index: -10;
-      overflow: hidden;
-    }
-    
-    .blob {
-      position: absolute;
-      filter: blur(80px);
-      opacity: 0.6;
-      animation: float 15s infinite ease-in-out;
-    }
-    .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #bfdbfe; animation-delay: 0s; } /* Blue */
-    .blob-2 { bottom: -10%; right: -10%; width: 50vw; height: 50vw; background: #e9d5ff; animation-delay: 2s; } /* Purple */
-    .blob-3 { top: 40%; left: 40%; width: 30vw; height: 30vw; background: #fecaca; animation-delay: 4s; } /* Red */
-  `}</style>
-);
-
 // --- Mock Data ---
 export const chartData = {
     Daily: [
@@ -66,6 +36,42 @@ export const chartData = {
 
 // --- Components ---
 
+/**
+ * MeshGradient Styling Components
+ */
+export const MeshGradient = () => (
+    <style jsx global>{`
+    @keyframes float {
+      0% { transform: translate(0px, 0px) scale(1); }
+      33% { transform: translate(30px, -50px) scale(1.1); }
+      66% { transform: translate(-20px, 20px) scale(0.9); }
+      100% { transform: translate(0px, 0px) scale(1); }
+    }
+    
+    .mesh-bg {
+      background-color: #f8fafc; /* Slate 50 */
+      position: fixed;
+      inset: 0;
+      z-index: -10;
+      overflow: hidden;
+    }
+    
+    .blob {
+      position: absolute;
+      filter: blur(80px);
+      opacity: 0.6;
+      animation: float 15s infinite ease-in-out;
+    }
+    .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #bfdbfe; animation-delay: 0s; } /* Blue */
+    .blob-2 { bottom: -10%; right: -10%; width: 50vw; height: 50vw; background: #e9d5ff; animation-delay: 2s; } /* Purple */
+    .blob-3 { top: 40%; left: 40%; width: 30vw; height: 30vw; background: #fecaca; animation-delay: 4s; } /* Red */
+  `}</style>
+);
+
+/**
+ * FrostCard
+ * The core building block: White, translucent, soft border.
+ */
 export function FrostCard({ children, className, delay = 0 }: any) {
     return (
     <motion.div
@@ -82,6 +88,9 @@ export function FrostCard({ children, className, delay = 0 }: any) {
     );
 }
 
+/**
+ * Floating Nav Item
+ */
 export function NavItem({ icon: Icon, active, onClick }: any) {
     return (
     <button
@@ -104,6 +113,10 @@ export function NavItem({ icon: Icon, active, onClick }: any) {
     );
 }
 
+/**
+ * Stat Pill
+ * Used inside cards for trends
+ */
 export function StatPill({ val, positive }: { val: string; positive?: boolean }) {
     return (
     <div className={cn(

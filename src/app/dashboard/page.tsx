@@ -29,6 +29,8 @@ import {
 import { MeshGradient, FrostCard, NavItem, StatPill, chartData } from "@/components/Frost";
 import { cn } from "@/lib/utils";
 
+// --- Main Layout ---
+
 type ChartRange = "Daily" | "Monthly" | "Yearly";
 
 export default function AetherDashboard() {
@@ -108,8 +110,8 @@ export default function AetherDashboard() {
                         </div>
                     </motion.header>
 
-                    {/* Dashboard Grid Container */}
-                    <div className="flex-1 overflow-y-auto rounded-[32px] pr-2 pb-2 scrollbar-hide px-4 md:px-0">
+                    {/* Dashboard Grid */}
+                    <div className="flex-1 overflow-y-auto rounded-[32px] pr-2 pb-2 scrollbar-hide">
                         {activeTab === 0 && (
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
@@ -458,6 +460,7 @@ export default function AetherDashboard() {
                             </div>
                         )}
                     </div>
+
                 </main>
             </div>
         </div>
