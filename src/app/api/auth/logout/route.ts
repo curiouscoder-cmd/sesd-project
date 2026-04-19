@@ -1,8 +1,5 @@
-import { NextResponse } from "next/server"
+import { authController } from "@/lib/container"
 import { apiHandler } from "@/lib/utils"
 
-export const POST = apiHandler(async () => {
-  const response = NextResponse.json({ success: true, message: "Logged out" })
-  response.cookies.set("token", "", { maxAge: 0 })
-  return response
-})
+export const dynamic = "force-dynamic"
+export const POST = apiHandler(authController.logout)

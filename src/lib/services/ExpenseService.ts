@@ -1,31 +1,31 @@
-import prisma from "@/lib/db"
-import { SplitService } from "@/lib/services/SplitService"
-import { CreateExpenseInput } from "@/lib/types"
+import { CreateExpenseDto } from "@/lib/dto"
+import { GroupMemberRepository } from "@/lib/repositories/GroupMemberRepository"
+import { ExpenseRepository } from "@/lib/repositories/ExpenseRepository"
+import { ForbiddenError, NotFoundError } from "@/lib/utils"
+import { SplitService } from "./SplitService"
 
 export class ExpenseService {
-  private splitService: SplitService
+  constructor(
+    private expenseRepository: ExpenseRepository,
+    private groupMemberRepository: GroupMemberRepository,
+    private splitService: SplitService
+  ) {}
 
-  constructor() {
-    this.splitService = new SplitService()
-  }
+  async createExpense(input: CreateExpenseDto, requesterId: number) {
+    const requesterMembership = await this.groupMemberRepository.findMembership(input.groupId, requesterId)
 
-  async createExpense(input: CreateExpenseInput, requesterId: number) {
-    const membership = await prisma.groupMember.findUnique({
-      where: {
-        groupId_userId: { groupId: input.groupId, userId: requesterId },
-      },
-    })
-
-    if (!membership) {
-      throw new Error("You are not a member of this group")
+    if (!requesterMembership) {
+      throw new ForbiddenError("You are not a member of this group")
     }
 
-    const members = await prisma.groupMember.findMany({
-      where: { groupId: input.groupId },
-      select: { userId: true },
-    })
+    const payerMembership = await this.groupMemberRepository.findMembership(input.groupId, input.paidById)
 
-    const memberIds = members.map((m) => m.userId)
+    if (!payerMembership) {
+      throw new ForbiddenError("The payer must be a member of this group")
+    }
+
+    const members = await this.groupMemberRepository.findMemberIdsByGroupId(input.groupId)
+    const memberIds = members.map((member) => member.userId)
 
     const splits = this.splitService.calculateSplits(
       input.amount,
@@ -34,91 +34,39 @@ export class ExpenseService {
       input.splits
     )
 
-    const expense = await prisma.$transaction(async (tx) => {
-      const created = await tx.expense.create({
-        data: {
-          description: input.description,
-          amount: input.amount,
-          paidById: input.paidById,
-          groupId: input.groupId,
-          splitType: input.splitType,
-        },
-      })
-
-      await tx.split.createMany({
-        data: splits.map((s) => ({
-          expenseId: created.id,
-          owesId: s.userId,
-          amount: s.amount,
-        })),
-      })
-
-      return created
-    })
-
-    return this.getExpenseById(expense.id)
-  }
-
-  async getExpenseById(expenseId: number) {
-    return prisma.expense.findUnique({
-      where: { id: expenseId },
-      include: {
-        group: {
-          select: { id: true, name: true, email: true },
-        },
-        splits: {
-          include: {
-            owes: {
-              select: { id: true, name: true, email: true },
-            },
-          },
-        },
+    return this.expenseRepository.createExpenseWithSplits(
+      {
+        description: input.description,
+        amount: input.amount,
+        paidById: input.paidById,
+        groupId: input.groupId,
+        splitType: input.splitType,
       },
-    })
+      splits
+    )
   }
 
   async getExpensesByGroup(groupId: number, userId: number) {
-    const membership = await prisma.groupMember.findUnique({
-      where: {
-        groupId_userId: { groupId, userId },
-      },
-    })
+    const membership = await this.groupMemberRepository.findMembership(groupId, userId)
 
     if (!membership) {
-      throw new Error("You are not a member of this group")
+      throw new ForbiddenError("You are not a member of this group")
     }
 
-    return prisma.expense.findMany({
-      where: { groupId },
-      include: {
-        group: {
-          select: { id: true, name: true, email: true },
-        },
-        splits: {
-          include: {
-            owes: {
-              select: { id: true, name: true, email: true },
-            },
-          },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    })
+    return this.expenseRepository.findExpensesByGroupId(groupId)
   }
 
   async deleteExpense(expenseId: number, userId: number) {
-    const expense = await prisma.expense.findUnique({
-      where: { id: expenseId },
-    })
+    const expense = await this.expenseRepository.findExpenseById(expenseId)
 
     if (!expense) {
-      throw new Error("Expense not found")
+      throw new NotFoundError("Expense not found")
     }
 
     if (expense.paidById !== userId) {
-      throw new Error("Only the person who paid can delete this expense")
+      throw new ForbiddenError("Only the person who paid can delete this expense")
     }
 
-    await prisma.expense.delete({ where: { id: expenseId } })
+    await this.expenseRepository.deleteExpense(expenseId)
   }
 }

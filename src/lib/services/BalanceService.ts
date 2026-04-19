@@ -1,75 +1,75 @@
-import prisma from "@/lib/db"
-import { BalanceEntry } from "@/lib/types"
+import { GroupMemberRepository } from "@/lib/repositories/GroupMemberRepository"
+import { ExpenseRepository } from "@/lib/repositories/ExpenseRepository"
+import { GroupRepository } from "@/lib/repositories/GroupRepository"
+import { SettlementRepository } from "@/lib/repositories/SettlementRepository"
+import { BalanceEntry, GroupBalanceSummary } from "@/lib/types"
+import { ForbiddenError } from "@/lib/utils"
 
 export class BalanceService {
+  constructor(
+    private groupRepository: GroupRepository,
+    private groupMemberRepository: GroupMemberRepository,
+    private expenseRepository: ExpenseRepository,
+    private settlementRepository: SettlementRepository
+  ) {}
+
   async getGroupBalances(groupId: number, userId: number): Promise<BalanceEntry[]> {
-    const membership = await prisma.groupMember.findUnique({
-      where: { groupId_userId: { groupId, userId } },
-    })
+    const membership = await this.groupMemberRepository.findMembership(groupId, userId)
 
     if (!membership) {
-      throw new Error("You are not a member of this group")
+      throw new ForbiddenError("You are not a member of this group")
     }
 
-    const members = await prisma.groupMember.findMany({
-      where: { groupId },
-      include: { user: { select: { id: true, name: true, email: true } } },
-    })
-
-    const expenses = await prisma.expense.findMany({
-      where: { groupId },
-      include: { splits: true },
-    })
-
-    const settlements = await prisma.settlement.findMany({ where: { groupId } })
-
+    const members = await this.groupMemberRepository.findMembersByGroupId(groupId)
+    const expenses = await this.expenseRepository.findExpensesByGroupId(groupId)
+    const settlements = await this.settlementRepository.findSettlementsByGroupId(groupId)
     const balanceMap = new Map<number, number>()
-    members.forEach((m) => balanceMap.set(m.userId, 0))
+
+    members.forEach((member) => {
+      balanceMap.set(member.userId, 0)
+    })
 
     for (const expense of expenses) {
-      const paidById = expense.paidById
-      const current = balanceMap.get(paidById) ?? 0
-      balanceMap.set(paidById, current + Number(expense.amount))
+      const currentBalance = balanceMap.get(expense.paidById) ?? 0
+      balanceMap.set(expense.paidById, currentBalance + Number(expense.amount))
 
       for (const split of expense.splits) {
-        const owesId = split.owesId
-        const splitAmount = Number(split.amount)
-        const oweCurrent = balanceMap.get(owesId) ?? 0
-        balanceMap.set(owesId, oweCurrent - splitAmount)
+        const splitBalance = balanceMap.get(split.owesId) ?? 0
+        balanceMap.set(split.owesId, splitBalance - Number(split.amount))
       }
     }
 
-    for (const s of settlements) {
-      const payerBalance = balanceMap.get(s.paidById) ?? 0
-      balanceMap.set(s.paidById, payerBalance - Number(s.amount))
+    for (const settlement of settlements) {
+      const payerBalance = balanceMap.get(settlement.paidById) ?? 0
+      balanceMap.set(settlement.paidById, payerBalance - Number(settlement.amount))
 
-      const receiverBalance = balanceMap.get(s.paidToId) ?? 0
-      balanceMap.set(s.paidToId, receiverBalance + Number(s.amount))
+      const receiverBalance = balanceMap.get(settlement.paidToId) ?? 0
+      balanceMap.set(settlement.paidToId, receiverBalance + Number(settlement.amount))
     }
 
-    return members.map((m) => ({
-      userId: m.userId,
-      name: m.user.name,
-      email: m.user.email,
-      balance: parseFloat((balanceMap.get(m.userId) ?? 0).toFixed(2)),
+    return members.map((member) => ({
+      userId: member.userId,
+      name: member.user.name,
+      email: member.user.email,
+      balance: Number((balanceMap.get(member.userId) ?? 0).toFixed(2)),
     }))
   }
 
-  async getUserOverallBalance(userId: number): Promise<BalanceEntry[]> {
-    const userGroups = await prisma.groupMember.findMany({
-      where: { userId },
-      select: { groupId: true },
-    })
+  async getUserOverallBalance(userId: number): Promise<GroupBalanceSummary[]> {
+    const groups = await this.groupRepository.findGroupsByUser(userId)
 
-    const groupIds = userGroups.map((g) => g.groupId)
+    const results: GroupBalanceSummary[] = []
 
-    const results: BalanceEntry[] = []
+    for (const group of groups) {
+      const balances = await this.getGroupBalances(group.id, userId)
+      const userBalance = balances.find((item) => item.userId === userId)
 
-    for (const groupId of groupIds) {
-      const entries = await this.getGroupBalances(groupId, userId)
-      const userEntry = entries.find((e) => e.userId === userId)
-      if (userEntry) {
-        results.push(userEntry)
+      if (userBalance) {
+        results.push({
+          ...userBalance,
+          groupId: group.id,
+          groupName: group.name,
+        })
       }
     }
 

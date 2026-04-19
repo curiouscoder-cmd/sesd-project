@@ -1,68 +1,46 @@
-import prisma from "@/lib/db"
-import { CreateSettlementInput } from "@/lib/types"
+import { CreateSettlementDto } from "@/lib/dto"
+import { GroupMemberRepository } from "@/lib/repositories/GroupMemberRepository"
+import { SettlementRepository } from "@/lib/repositories/SettlementRepository"
+import { ForbiddenError, ValidationError } from "@/lib/utils"
 
 export class SettlementService {
-  async createSettlement(input: CreateSettlementInput, paidById: number) {
-    const membership = await prisma.groupMember.findUnique({
-      where: {
-        groupId_userId: { groupId: input.groupId, userId: paidById },
-      },
-    })
+  constructor(
+    private settlementRepository: SettlementRepository,
+    private groupMemberRepository: GroupMemberRepository
+  ) {}
 
-    if (!membership) {
-      throw new Error("You are not a member of this group")
+  async createSettlement(input: CreateSettlementDto, paidById: number) {
+    const senderMembership = await this.groupMemberRepository.findMembership(input.groupId, paidById)
+
+    if (!senderMembership) {
+      throw new ForbiddenError("You are not a member of this group")
     }
 
-    const receiverMembership = await prisma.groupMember.findUnique({
-      where: {
-        groupId_userId: { groupId: input.groupId, userId: input.paidToId },
-      },
-    })
+    const receiverMembership = await this.groupMemberRepository.findMembership(input.groupId, input.paidToId)
 
     if (!receiverMembership) {
-      throw new Error("The person you are settling with is not in this group")
+      throw new ForbiddenError("The person you are settling with is not in this group")
     }
 
     if (paidById === input.paidToId) {
-      throw new Error("You cannot settle with yourself")
+      throw new ValidationError("You cannot settle with yourself")
     }
 
-    if (input.amount <= 0) {
-      throw new Error("Settlement amount must be greater than 0")
-    }
-
-    const settlement = await prisma.settlement.create({
-      data: {
-        groupId: input.groupId,
-        paidById,
-        paidToId: input.paidToId,
-        amount: input.amount,
-      },
-      include: {
-        paidBy: { select: { id: true, name: true, email: true } },
-        paidTo: { select: { id: true, name: true, email: true } },
-      },
+    return this.settlementRepository.createSettlement({
+      groupId: input.groupId,
+      paidById,
+      paidToId: input.paidToId,
+      amount: input.amount,
     })
-
-    return settlement
   }
 
   async getSettlementsByGroup(groupId: number, userId: number) {
-    const membership = await prisma.groupMember.findUnique({
-      where: { groupId_userId: { groupId, userId } },
-    })
+    const membership = await this.groupMemberRepository.findMembership(groupId, userId)
 
     if (!membership) {
-      throw new Error("You are not a member of this group")
+      throw new ForbiddenError("You are not a member of this group")
     }
 
-    return prisma.settlement.findMany({
-      where: { groupId },
-      include: {
-        paidBy: { select: { id: true, name: true, email: true } },
-        paidTo: { select: { id: true, name: true, email: true } },
-      },
-      orderBy: { createdAt: "desc" },
-    })
+    return this.settlementRepository.findSettlementsByGroupId(groupId)
   }
 }

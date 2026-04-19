@@ -64,8 +64,8 @@ model Expense {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  paidBy Group   @relation(fields: [groupId], references: [id])
-  group  User    @relation("ExpensePaidBy", fields: [paidById], references: [id])
+  paidBy User    @relation("ExpensePaidBy", fields: [paidById], references: [id])
+  group  Group   @relation(fields: [groupId], references: [id])
   splits Split[]
 
   @@map("expenses")

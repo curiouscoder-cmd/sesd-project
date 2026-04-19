@@ -3,28 +3,7 @@ export interface AuthPayload {
   email: string
 }
 
-export interface RegisterInput {
-  name: string
-  email: string
-  password: string
-}
-
-export interface LoginInput {
-  email: string
-  password: string
-}
-
-export interface CreateGroupInput {
-  name: string
-}
-
-export interface UpdateGroupInput {
-  name: string
-}
-
-export interface AddMemberInput {
-  email: string
-}
+export type SplitTypeName = "EQUAL" | "EXACT" | "PERCENTAGE"
 
 export interface SplitDetail {
   userId: number
@@ -32,24 +11,14 @@ export interface SplitDetail {
   percentage?: number
 }
 
-export interface CreateExpenseInput {
-  description: string
-  amount: number
-  paidById: number
-  groupId: number
-  splitType: "EQUAL" | "EXACT" | "PERCENTAGE"
-  splits?: SplitDetail[]
-}
-
-export interface CreateSettlementInput {
-  groupId: number
-  paidToId: number
-  amount: number
-}
-
 export interface BalanceEntry {
   userId: number
   name: string
   email: string
   balance: number
+}
+
+export interface GroupBalanceSummary extends BalanceEntry {
+  groupId: number
+  groupName: string
 }

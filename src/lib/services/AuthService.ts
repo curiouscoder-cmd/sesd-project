@@ -1,50 +1,39 @@
-import prisma from "@/lib/db"
-import { hashPassword, verifyPassword } from "@/lib/utils/password"
+import { LoginUserDto, RegisterUserDto } from "@/lib/dto"
+import { UserRepository } from "@/lib/repositories/UserRepository"
+import { ConflictError, NotFoundError, UnauthorizedError } from "@/lib/utils"
 import { signToken } from "@/lib/utils/jwt"
-import { RegisterInput, LoginInput } from "@/lib/types"
+import { hashPassword, verifyPassword } from "@/lib/utils/password"
 
 export class AuthService {
-  async register(input: RegisterInput) {
-    const existing = await prisma.user.findUnique({
-      where: { email: input.email },
-    })
+  constructor(private userRepository: UserRepository) {}
 
-    if (existing) {
-      throw new Error("An account with this email already exists")
+  async register(input: RegisterUserDto) {
+    const existingUser = await this.userRepository.findByEmail(input.email)
+
+    if (existingUser) {
+      throw new ConflictError("An account with this email already exists")
     }
 
-    const hashed = await hashPassword(input.password)
+    const hashedPassword = await hashPassword(input.password)
 
-    const user = await prisma.user.create({
-      data: {
-        name: input.name,
-        email: input.email,
-        password: hashed,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        createdAt: true,
-      },
+    return this.userRepository.createUser({
+      name: input.name,
+      email: input.email,
+      password: hashedPassword,
     })
-
-    return user
   }
 
-  async login(input: LoginInput) {
-    const user = await prisma.user.findUnique({
-      where: { email: input.email },
-    })
+  async login(input: LoginUserDto) {
+    const user = await this.userRepository.findByEmail(input.email)
 
     if (!user) {
-      throw new Error("Invalid email or password")
+      throw new UnauthorizedError("Invalid email or password")
     }
 
-    const valid = await verifyPassword(input.password, user.password)
+    const isPasswordValid = await verifyPassword(input.password, user.password)
 
-    if (!valid) {
-      throw new Error("Invalid email or password")
+    if (!isPasswordValid) {
+      throw new UnauthorizedError("Invalid email or password")
     }
 
     const token = await signToken({ userId: user.id, email: user.email })
@@ -57,5 +46,15 @@ export class AuthService {
         email: user.email,
       },
     }
+  }
+
+  async getMe(userId: number) {
+    const user = await this.userRepository.findPublicById(userId)
+
+    if (!user) {
+      throw new NotFoundError("User not found")
+    }
+
+    return user
   }
 }

@@ -1,164 +1,95 @@
-import prisma from "@/lib/db"
-import { CreateGroupInput, UpdateGroupInput } from "@/lib/types"
+import { AddMemberDto, CreateGroupDto, UpdateGroupDto } from "@/lib/dto"
+import { GroupMemberRepository } from "@/lib/repositories/GroupMemberRepository"
+import { GroupRepository } from "@/lib/repositories/GroupRepository"
+import { UserRepository } from "@/lib/repositories/UserRepository"
+import { ConflictError, ForbiddenError, NotFoundError } from "@/lib/utils"
 
 export class GroupService {
-  async updateGroup(groupId: number, input: UpdateGroupInput, userId: number) {
-    const group = await prisma.group.findFirst({
-      where: { id: groupId, createdBy: userId },
-    })
+  constructor(
+    private groupRepository: GroupRepository,
+    private groupMemberRepository: GroupMemberRepository,
+    private userRepository: UserRepository
+  ) {}
 
-    if (!group) {
-      throw new Error("Only the group creator can update the group")
-    }
-
-    return prisma.group.update({
-      where: { id: groupId },
-      data: { name: input.name },
-    })
+  createGroup(input: CreateGroupDto, userId: number) {
+    return this.groupRepository.createGroup(input.name, userId)
   }
 
-  async deleteGroup(groupId: number, userId: number) {
-    const group = await prisma.group.findFirst({
-      where: { id: groupId, createdBy: userId },
-    })
-
-    if (!group) {
-      throw new Error("Only the group creator can delete this group")
-    }
-
-    await prisma.group.delete({
-      where: { id: groupId },
-    })
-  }
-  async createGroup(input: CreateGroupInput, userId: number) {
-    const group = await prisma.group.create({
-      data: {
-        name: input.name,
-        createdBy: userId,
-        members: {
-          create: { userId },
-        },
-      },
-      include: {
-        members: {
-          include: {
-            user: {
-              select: { id: true, name: true, email: true },
-            },
-          },
-        },
-      },
-    })
-
-    return group
-  }
-
-  async getGroupsByUser(userId: number) {
-    const groups = await prisma.group.findMany({
-      where: {
-        members: {
-          some: { userId },
-        },
-      },
-      include: {
-        members: {
-          include: {
-            user: {
-              select: { id: true, name: true, email: true },
-            },
-          },
-        },
-        _count: {
-          select: { expenses: true },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    })
-
-    return groups
+  getGroupsByUser(userId: number) {
+    return this.groupRepository.findGroupsByUser(userId)
   }
 
   async getGroupById(groupId: number, userId: number) {
-    const group = await prisma.group.findFirst({
-      where: {
-        id: groupId,
-        members: { some: { userId } },
-      },
-      include: {
-        members: {
-          include: {
-            user: {
-              select: { id: true, name: true, email: true },
-            },
-          },
-        },
-        _count: {
-          select: { expenses: true },
-        },
-      },
-    })
+    const group = await this.groupRepository.findAccessibleGroup(groupId, userId)
 
     if (!group) {
-      throw new Error("Group not found or you are not a member")
+      throw new NotFoundError("Group not found or you are not a member")
     }
 
     return group
   }
 
-  async addMember(groupId: number, email: string, requesterId: number) {
-    const group = await prisma.group.findFirst({
-      where: {
-        id: groupId,
-        createdBy: requesterId,
-      },
-    })
+  async updateGroup(groupId: number, input: UpdateGroupDto, userId: number) {
+    const group = await this.groupRepository.findOwnedGroup(groupId, userId)
 
     if (!group) {
-      throw new Error("Only the group creator can add members")
+      throw new ForbiddenError("Only the group creator can update the group")
     }
 
-    const userToAdd = await prisma.user.findUnique({
-      where: { email },
-      select: { id: true, name: true, email: true },
-    })
+    return this.groupRepository.updateGroupName(groupId, input.name)
+  }
+
+  async deleteGroup(groupId: number, userId: number) {
+    const group = await this.groupRepository.findOwnedGroup(groupId, userId)
+
+    if (!group) {
+      throw new ForbiddenError("Only the group creator can delete this group")
+    }
+
+    await this.groupRepository.deleteGroup(groupId)
+  }
+
+  async addMember(groupId: number, input: AddMemberDto, userId: number) {
+    const group = await this.groupRepository.findOwnedGroup(groupId, userId)
+
+    if (!group) {
+      throw new ForbiddenError("Only the group creator can add members")
+    }
+
+    const userToAdd = await this.userRepository.findPublicByEmail(input.email)
 
     if (!userToAdd) {
-      throw new Error("No user found with that email")
+      throw new NotFoundError("No user found with that email")
     }
 
-    const alreadyMember = await prisma.groupMember.findUnique({
-      where: {
-        groupId_userId: { groupId, userId: userToAdd.id },
-      },
-    })
+    const existingMembership = await this.groupMemberRepository.findMembership(groupId, userToAdd.id)
 
-    if (alreadyMember) {
-      throw new Error("User is already a member of this group")
+    if (existingMembership) {
+      throw new ConflictError("User is already a member of this group")
     }
 
-    await prisma.groupMember.create({
-      data: { groupId, userId: userToAdd.id },
-    })
+    await this.groupMemberRepository.addMember(groupId, userToAdd.id)
+
     return userToAdd
   }
 
-  async removeMember(groupId: number, userIdToRemove: number, requesterId: number) {
-    const group = await prisma.group.findFirst({
-      where: { id: groupId, createdBy: requesterId },
-    })
+  async removeMember(groupId: number, memberId: number, userId: number) {
+    const group = await this.groupRepository.findOwnedGroup(groupId, userId)
 
     if (!group) {
-      throw new Error("Only the group creator can remove members")
+      throw new ForbiddenError("Only the group creator can remove members")
     }
 
-    if (userIdToRemove === requesterId) {
-      throw new Error("Group creator cannot be removed")
+    if (memberId === userId) {
+      throw new ForbiddenError("Group creator cannot be removed")
     }
 
-    await prisma.groupMember.delete({
-      where: {
-        groupId_userId: { groupId, userId: userIdToRemove },
-      },
-    })
+    const membership = await this.groupMemberRepository.findMembership(groupId, memberId)
+
+    if (!membership) {
+      throw new NotFoundError("Member not found in this group")
+    }
+
+    await this.groupMemberRepository.removeMember(groupId, memberId)
   }
 }

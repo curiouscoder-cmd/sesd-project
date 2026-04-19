@@ -1,67 +1,109 @@
 # Friends Expense Splitter
 
-## What is this?
+## Project idea
 
-A web app where you and your friends can track shared expenses and figure out who owes whom. Think of it like a simpler version of Splitwise — you create a group, add expenses, and the app does the math for you.
+This project is a full stack expense splitting app for small groups like trips, flats, events, and college teams. A user can create a group, add members, record expenses, choose a split type, check balances, and settle pending dues.
 
-## Why this?
+The backend is the main focus of the project, so the design is kept more structured than the frontend. Instead of putting logic directly inside API routes, the backend is divided into layers:
 
-Splitting expenses manually is annoying. Every trip or shared living situation ends up with people forgetting who paid for what. This app solves that — just log expenses and it handles the rest.
+- Route layer
+- Controller layer
+- Service layer
+- Repository layer
+- Database layer
+
+This makes the code easier to read, test, and extend.
+
+## Why this project
+
+Shared expenses become messy very quickly. People forget what they paid, who still owes money, and how much is left after settlements. The goal of this project is to remove that confusion with a small system that can:
+
+- store groups and members
+- record expenses
+- calculate splits
+- calculate balances
+- record settlements
+
+## Main backend design choices
+
+### OOP structure
+
+The backend follows a simple object oriented approach:
+
+- Controllers handle request and response flow
+- Services hold business rules
+- Repositories talk to Prisma
+- DTO classes validate and normalize incoming input
+- Strategy classes handle split calculation
+
+### OOP principles used
+
+- Encapsulation:
+  Request validation and business rules are inside classes instead of being spread across route files
+- Abstraction:
+  Services depend on repositories instead of writing queries directly everywhere
+- Inheritance:
+  Repositories extend a shared base repository
+- Polymorphism:
+  Different split strategies implement the same interface and are selected at runtime
+
+### Design patterns used
+
+- Strategy Pattern for equal, exact, and percentage split calculations
+- Repository Pattern for database access
+- Service Layer Pattern for business logic
+
+## Main features
+
+1. User authentication
+2. Group creation and member management
+3. Expense creation with split strategies
+4. Group balance calculation
+5. Settlement recording
+6. Dashboard summary
 
 ## Scope
 
-This is a full-stack application built with Next.js:
-- **Backend** — Next.js API Routes (REST API)
-- **Frontend** — Next.js (React based)
-- **Database** — MySQL (via Prisma ORM)
+### In scope
 
-## Key Features
+- register and login
+- create and manage groups
+- add expenses
+- split by equal, exact, percentage
+- view balances
+- settle up
+- dashboard summary
 
-1. **User Authentication**
-   - Register with name, email, password
-   - Login / Logout
-   - Basic JWT based auth
+### Out of scope
 
-2. **Groups**
-   - Create a group (e.g., "Goa Trip", "Flat Expenses")
-   - Add members to a group (they must be registered users)
-   - View all your groups
+- payment gateway
+- receipt upload
+- notifications
+- multi currency support
 
-3. **Expenses**
-   - Add an expense inside a group (who paid, how much, description)
-   - Choose split type:
-     - **Equal** — split equally among all members
-     - **Exact** — manually enter each person's share
-     - **Percentage** — enter percentage for each person
-   - View all expenses of a group
+## Tech stack
 
-4. **Balances**
-   - See how much you owe or are owed in a group
-   - Overall balance across all groups
+| Layer | Choice |
+|---|---|
+| Frontend | Next.js |
+| Backend | Next.js Route Handlers |
+| Language | TypeScript |
+| ORM | Prisma |
+| Database | MySQL |
+| Auth | JWT |
 
-5. **Settle Up**
-   - Record a payment between two people
-   - Once settled, balance gets updated
+## Final architecture summary
 
-6. **Dashboard**
-   - See your total balance (owed + owe)
-   - Recent activity
-   - Quick links to groups
+The final version of the project is designed like this:
 
-## What I'm NOT building (out of scope)
+```text
+Client
+  -> API Route
+  -> Controller
+  -> Service
+  -> Repository
+  -> Prisma
+  -> MySQL
+```
 
-- No real payment integration (no Razorpay/UPI etc.)
-- No push notifications
-- No currency conversion
-- No image upload for receipts (maybe later)
-
-## Tech Stack Breakdown
-
-| Layer       | Tech                        |
-|-------------|-----------------------------|
-| Framework   | Next.js (TypeScript)        |
-| Backend     | Next.js API Routes          |
-| ORM         | Prisma                      |
-| Database    | MySQL                       |
-| Auth        | JWT (jose library)          |
-| API Testing | Postman                     |
+This keeps the backend simple enough for a student project, but structured enough to show software engineering and system design thinking.

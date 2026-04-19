@@ -1,48 +1,37 @@
 # Use Case Diagram
 
-## Actors
+```mermaid
+flowchart LR
+    User((User))
 
-- **User** — a registered person who can create groups, add expenses, settle up, etc.
+    Register([Register])
+    Login([Login])
+    CreateGroup([Create Group])
+    AddMembers([Add Members])
+    ViewGroups([View Groups])
+    AddExpense([Add Expense])
+    ViewExpenses([View Expenses])
+    ViewBalances([View Balances])
+    SettleUp([Settle Up])
+    ViewDashboard([View Dashboard])
 
-## Diagram
+    User --> Register
+    User --> Login
+    User --> CreateGroup
+    User --> AddMembers
+    User --> ViewGroups
+    User --> AddExpense
+    User --> ViewExpenses
+    User --> ViewBalances
+    User --> SettleUp
+    User --> ViewDashboard
+```
 
-![alt text](image-1.png)
+## Main use cases
 
-## Use Case Descriptions
-
-### UC1: Register
-- User enters name, email, password
-- System creates the account
-
-### UC2: Login
-- User enters email and password
-- System verifies and returns a JWT token
-
-### UC3: Create Group
-- User gives a group name
-- System creates the group with that user as the creator/member
-
-### UC4: Add Members to Group
-- User searches for other registered users by email
-- Adds them to the group
-
-### UC5: View Groups
-- User sees all groups they are part of
-
-### UC6: Add Expense
-- User fills in: amount, description, who paid
-- Selects split type (equal / exact / percentage)
-- System calculates each person's share
-
-### UC8: View Expenses
-- User sees all expenses in a group with who paid and how it was split
-
-### UC9: View Balances
-- Shows how much user owes or is owed per group
-
-### UC10: Settle Up
-- User records a payment to another member
-- System updates the balances
-
-### UC11: View Dashboard
-- Shows total balance, recent activity, group links
+1. Register and login
+2. Create a group and manage members
+3. Add expenses using one of the split types
+4. See balances for a group
+5. Record settlements
+6. Check dashboard summary

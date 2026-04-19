@@ -1,10 +1,9 @@
-import { SplitStrategy, SplitResult } from "@/lib/strategies/SplitStrategy"
 import { EqualSplitStrategy } from "@/lib/strategies/EqualSplitStrategy"
 import { ExactSplitStrategy } from "@/lib/strategies/ExactSplitStrategy"
 import { PercentageSplitStrategy } from "@/lib/strategies/PercentageSplitStrategy"
-import { SplitDetail } from "@/lib/types"
-
-type SplitTypeName = "EQUAL" | "EXACT" | "PERCENTAGE"
+import { SplitResult, SplitStrategy } from "@/lib/strategies/SplitStrategy"
+import { SplitDetail, SplitTypeName } from "@/lib/types"
+import { ValidationError } from "@/lib/utils"
 
 export class SplitService {
   private strategies: Map<SplitTypeName, SplitStrategy>
@@ -26,7 +25,7 @@ export class SplitService {
     const strategy = this.strategies.get(splitType)
 
     if (!strategy) {
-      throw new Error(`Unknown split type: ${splitType}`)
+      throw new ValidationError("Unknown split type")
     }
 
     return strategy.calculate(amount, memberIds, details)

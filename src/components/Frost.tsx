@@ -1,130 +1,181 @@
 "use client";
+
 import { motion } from "framer-motion";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, type LucideIcon } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 
-// --- Mock Data ---
-export const chartData = {
-    Daily: [
-        { name: "Mon", revenue: 4000, users: 2400 },
-        { name: "Tue", revenue: 3000, users: 1398 },
-        { name: "Wed", revenue: 2000, users: 9800 },
-        { name: "Thu", revenue: 2780, users: 3908 },
-        { name: "Fri", revenue: 1890, users: 4800 },
-        { name: "Sat", revenue: 2390, users: 3800 },
-        { name: "Sun", revenue: 3490, users: 4300 },
-    ],
-    Monthly: [
-        { name: "Jan", revenue: 12000, users: 8400 },
-        { name: "Feb", revenue: 15000, users: 9398 },
-        { name: "Mar", revenue: 18000, users: 12800 },
-        { name: "Apr", revenue: 14780, users: 10908 },
-        { name: "May", revenue: 21890, users: 14800 },
-        { name: "Jun", revenue: 25390, users: 16800 },
-        { name: "Jul", revenue: 31490, users: 18300 },
-    ],
-    Yearly: [
-        { name: "2018", revenue: 140000, users: 52400 },
-        { name: "2019", revenue: 183000, users: 61398 },
-        { name: "2020", revenue: 212000, users: 89800 },
-        { name: "2021", revenue: 282780, users: 103908 },
-        { name: "2022", revenue: 351890, users: 124800 },
-        { name: "2023", revenue: 412390, users: 153800 },
-        { name: "2024", revenue: 503490, users: 184300 },
-    ]
+export type ChartRange = "Daily" | "Monthly" | "Yearly";
+
+export type TrendPoint = {
+  name: string;
+  totalSpent: number;
+  totalSettled: number;
 };
 
-// --- Components ---
+export const chartData: Record<ChartRange, TrendPoint[]> = {
+  Daily: [
+    { name: "Mon", totalSpent: 2600, totalSettled: 1800 },
+    { name: "Tue", totalSpent: 3400, totalSettled: 2200 },
+    { name: "Wed", totalSpent: 2100, totalSettled: 2700 },
+    { name: "Thu", totalSpent: 3900, totalSettled: 2500 },
+    { name: "Fri", totalSpent: 4700, totalSettled: 3200 },
+    { name: "Sat", totalSpent: 5300, totalSettled: 3600 },
+    { name: "Sun", totalSpent: 4100, totalSettled: 3400 },
+  ],
+  Monthly: [
+    { name: "Jan", totalSpent: 12000, totalSettled: 7600 },
+    { name: "Feb", totalSpent: 14800, totalSettled: 9100 },
+    { name: "Mar", totalSpent: 16500, totalSettled: 11400 },
+    { name: "Apr", totalSpent: 18200, totalSettled: 12600 },
+    { name: "May", totalSpent: 22600, totalSettled: 14800 },
+    { name: "Jun", totalSpent: 24100, totalSettled: 17100 },
+    { name: "Jul", totalSpent: 26500, totalSettled: 19400 },
+  ],
+  Yearly: [
+    { name: "2020", totalSpent: 98000, totalSettled: 72000 },
+    { name: "2021", totalSpent: 136000, totalSettled: 101000 },
+    { name: "2022", totalSpent: 173000, totalSettled: 129000 },
+    { name: "2023", totalSpent: 218000, totalSettled: 164000 },
+    { name: "2024", totalSpent: 266000, totalSettled: 209000 },
+    { name: "2025", totalSpent: 311000, totalSettled: 246000 },
+    { name: "2026", totalSpent: 347000, totalSettled: 291000 },
+  ],
+};
 
-/**
- * MeshGradient Styling Components
- */
-export const MeshGradient = () => (
+export function MeshGradient() {
+  return (
     <style jsx global>{`
-    @keyframes float {
-      0% { transform: translate(0px, 0px) scale(1); }
-      33% { transform: translate(30px, -50px) scale(1.1); }
-      66% { transform: translate(-20px, 20px) scale(0.9); }
-      100% { transform: translate(0px, 0px) scale(1); }
-    }
-    
-    .mesh-bg {
-      background-color: #f8fafc; /* Slate 50 */
-      position: fixed;
-      inset: 0;
-      z-index: -10;
-      overflow: hidden;
-    }
-    
-    .blob {
-      position: absolute;
-      filter: blur(80px);
-      opacity: 0.6;
-      animation: float 15s infinite ease-in-out;
-    }
-    .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #bfdbfe; animation-delay: 0s; } /* Blue */
-    .blob-2 { bottom: -10%; right: -10%; width: 50vw; height: 50vw; background: #e9d5ff; animation-delay: 2s; } /* Purple */
-    .blob-3 { top: 40%; left: 40%; width: 30vw; height: 30vw; background: #fecaca; animation-delay: 4s; } /* Red */
-  `}</style>
-);
+      @keyframes float {
+        0% {
+          transform: translate(0px, 0px) scale(1);
+        }
+        33% {
+          transform: translate(30px, -45px) scale(1.08);
+        }
+        66% {
+          transform: translate(-24px, 18px) scale(0.92);
+        }
+        100% {
+          transform: translate(0px, 0px) scale(1);
+        }
+      }
 
-/**
- * FrostCard
- * The core building block: White, translucent, soft border.
- */
-export function FrostCard({ children, className, delay = 0 }: any) {
-    return (
+      .mesh-bg {
+        position: fixed;
+        inset: 0;
+        z-index: -20;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at top, rgba(255, 255, 255, 0.75), transparent 36%),
+          linear-gradient(180deg, #f7f8fc 0%, #eef4ff 48%, #f7fbff 100%);
+      }
+
+      .blob {
+        position: absolute;
+        border-radius: 9999px;
+        filter: blur(90px);
+        opacity: 0.62;
+        animation: float 16s infinite ease-in-out;
+      }
+
+      .blob-1 {
+        top: -10%;
+        left: -10%;
+        width: 46vw;
+        height: 46vw;
+        background: rgba(96, 165, 250, 0.45);
+      }
+
+      .blob-2 {
+        right: -8%;
+        bottom: -12%;
+        width: 42vw;
+        height: 42vw;
+        background: rgba(192, 132, 252, 0.34);
+        animation-delay: 2.5s;
+      }
+
+      .blob-3 {
+        top: 24%;
+        left: 40%;
+        width: 28vw;
+        height: 28vw;
+        background: rgba(251, 191, 36, 0.28);
+        animation-delay: 5s;
+      }
+    `}</style>
+  );
+}
+
+type FrostCardProps = {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+};
+
+export function FrostCard({ children, className, delay = 0 }: FrostCardProps) {
+  return (
     <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay, duration: 0.4, ease: "easeOut" }}
-        className={cn(
-            "relative overflow-hidden rounded-[32px] border border-white/60 bg-white/40 p-6 shadow-sm backdrop-blur-xl transition-all hover:bg-white/60 hover:shadow-md",
-            className
-        )}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.45, ease: "easeOut" }}
+      className={cn(
+        "relative overflow-hidden rounded-[32px] border border-white/70 bg-white/45 p-6 shadow-[0_20px_60px_rgba(99,102,241,0.08)] backdrop-blur-2xl transition-all duration-300 hover:border-white hover:bg-white/60 hover:shadow-[0_25px_70px_rgba(99,102,241,0.12)]",
+        className,
+      )}
     >
-        {children}
+      <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent" />
+      {children}
     </motion.div>
-    );
+  );
 }
 
-/**
- * Floating Nav Item
- */
-export function NavItem({ icon: Icon, active, onClick }: any) {
-    return (
+type NavItemProps = {
+  icon: LucideIcon;
+  label: string;
+  active?: boolean;
+  onClick?: () => void;
+};
+
+export function NavItem({ icon: Icon, label, active, onClick }: NavItemProps) {
+  return (
     <button
-        onClick={onClick}
-        className={cn(
-            "relative flex h-12 w-12 items-center justify-center rounded-2xl transition-all duration-300",
-            active
-                ? "bg-black text-white shadow-lg shadow-black/20"
-                : "text-slate-500 hover:bg-white/50 hover:text-black"
-        )}
+      onClick={onClick}
+      aria-label={label}
+      className={cn(
+        "group relative flex h-12 w-12 items-center justify-center rounded-2xl transition-all duration-300",
+        active
+          ? "bg-slate-900 text-white shadow-lg shadow-slate-900/20"
+          : "text-slate-500 hover:bg-white/60 hover:text-slate-900",
+      )}
     >
-        <Icon className="h-5 w-5" />
-        {active && (
-            <motion.div
-                layoutId="active-dot"
-                className="absolute -bottom-2 h-1 w-1 rounded-full bg-black"
-            />
-        )}
+      <Icon className="h-5 w-5" />
+      {active ? (
+        <motion.div layoutId="frost-nav-indicator" className="absolute -bottom-2 h-1.5 w-1.5 rounded-full bg-slate-900" />
+      ) : null}
+      <span className="pointer-events-none absolute left-[calc(100%+12px)] hidden whitespace-nowrap rounded-full border border-white/80 bg-white/90 px-2 py-1 text-xs font-semibold text-slate-600 shadow-lg group-hover:block">
+        {label}
+      </span>
     </button>
-    );
+  );
 }
 
-/**
- * Stat Pill
- * Used inside cards for trends
- */
-export function StatPill({ val, positive }: { val: string; positive?: boolean }) {
-    return (
-    <div className={cn(
-        "flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold",
-        positive ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
-    )}>
-        {positive ? <ArrowUpRight className="h-3 w-3" /> : <ArrowUpRight className="h-3 w-3 rotate-180" />}
-        {val}
+type StatPillProps = {
+  val: string;
+  positive?: boolean;
+};
+
+export function StatPill({ val, positive = true }: StatPillProps) {
+  return (
+    <div
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold",
+        positive ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700",
+      )}
+    >
+      {positive ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+      <span>{val}</span>
     </div>
-    );
+  );
 }

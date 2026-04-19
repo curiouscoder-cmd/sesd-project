@@ -1,29 +1,75 @@
 # ER Diagram
 
-## Tables
+```mermaid
+erDiagram
+    USERS ||--o{ GROUP_MEMBERS : joins
+    GROUPS ||--o{ GROUP_MEMBERS : has
+    USERS ||--o{ GROUPS : creates
+    GROUPS ||--o{ EXPENSES : contains
+    USERS ||--o{ EXPENSES : pays
+    EXPENSES ||--o{ SPLITS : creates
+    USERS ||--o{ SPLITS : owes
+    GROUPS ||--o{ SETTLEMENTS : contains
+    USERS ||--o{ SETTLEMENTS : pays
+    USERS ||--o{ SETTLEMENTS : receives
 
-Here's how the database is structured. Using MySQL.
+    USERS {
+      int id PK
+      string name
+      string email
+      string password
+      datetime createdAt
+      datetime updatedAt
+    }
 
-![alt text](image-3.png)
+    GROUPS {
+      int id PK
+      string name
+      int createdBy FK
+      datetime createdAt
+      datetime updatedAt
+    }
 
-## Table Descriptions
+    GROUP_MEMBERS {
+      int id PK
+      int groupId FK
+      int userId FK
+      datetime joinedAt
+      datetime updatedAt
+    }
 
-### users
-Stores registered users. Email is unique so no duplicate accounts.
+    EXPENSES {
+      int id PK
+      string description
+      decimal amount
+      int paidById FK
+      int groupId FK
+      string splitType
+      datetime createdAt
+      datetime updatedAt
+    }
 
-### groups
-Each group has a name and a creator. Like "Goa Trip" or "Flat Rent".
+    SPLITS {
+      int id PK
+      int expenseId FK
+      int owesId FK
+      decimal amount
+    }
 
-### group_members
-Junction table for the many-to-many relationship between users and groups.  
-A user can be in multiple groups, and a group has multiple members.
+    SETTLEMENTS {
+      int id PK
+      int groupId FK
+      int paidById FK
+      int paidToId FK
+      decimal amount
+      datetime createdAt
+      datetime updatedAt
+    }
+```
 
-### expenses
-Each expense belongs to a group. Stores who paid, how much, what it was for, and the split type (EQUAL, EXACT, PERCENTAGE).
+## Notes
 
-### splits
-After an expense is added, this table stores how much each member owes for that expense.  
-For example, if a ₹300 expense is split equally among 3 people, there will be 3 rows here with ₹100 each.
-
-### settlements
-When someone pays back, we record it here. This helps update the balance between two people in a group.
+- `group_members` handles the many to many relation between users and groups.
+- `expenses` stores the main payment record.
+- `splits` stores how much each user owes for one expense.
+- `settlements` stores payback records between two users inside a group.
