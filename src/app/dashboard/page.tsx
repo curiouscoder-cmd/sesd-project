@@ -140,6 +140,10 @@ function formatDate(value: string) {
   });
 }
 
+function isPositiveNumber(value: string) {
+  return Number(value) > 0;
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabId>("overview");
@@ -169,6 +173,7 @@ export default function DashboardPage() {
     () => groups.find((group) => group.id === activeGroupId) ?? null,
     [groups, activeGroupId]
   );
+  const otherMembers = activeGroup?.members.filter((member) => member.userId !== me?.id) ?? [];
 
   const loadBaseData = async () => {
     const [user, dashboard, groupList, balances] = await Promise.all([
@@ -211,7 +216,15 @@ export default function DashboardPage() {
     setError("");
 
     try {
-      await loadBaseData();
+      const nextActiveGroupId = await loadBaseData();
+
+      if (nextActiveGroupId) {
+        await loadGroupData(nextActiveGroupId);
+      } else {
+        setGroupExpenses([]);
+        setGroupSettlements([]);
+        setGroupBalances([]);
+      }
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Something went wrong");
       setMe(null);
@@ -276,7 +289,15 @@ export default function DashboardPage() {
     try {
       await action();
       setSuccess(message);
-      await loadBaseData();
+      const nextActiveGroupId = await loadBaseData();
+
+      if (nextActiveGroupId) {
+        await loadGroupData(nextActiveGroupId);
+      } else {
+        setGroupExpenses([]);
+        setGroupSettlements([]);
+        setGroupBalances([]);
+      }
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Something went wrong");
     } finally {
@@ -287,10 +308,15 @@ export default function DashboardPage() {
   const handleCreateGroup = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    if (!createGroupName.trim()) {
+      setError("Enter a group name");
+      return;
+    }
+
     await runAction(async () => {
       await request("/api/groups", {
         method: "POST",
-        body: JSON.stringify({ name: createGroupName }),
+        body: JSON.stringify({ name: createGroupName.trim() }),
       });
       setCreateGroupName("");
     }, "Group created");
@@ -303,10 +329,15 @@ export default function DashboardPage() {
       return;
     }
 
+    if (!memberEmail.trim()) {
+      setError("Enter the email of a registered user");
+      return;
+    }
+
     await runAction(async () => {
       await request(`/api/groups/${activeGroup.id}/members`, {
         method: "POST",
-        body: JSON.stringify({ email: memberEmail }),
+        body: JSON.stringify({ email: memberEmail.trim().toLowerCase() }),
       });
       setMemberEmail("");
     }, "Member added");
@@ -317,6 +348,42 @@ export default function DashboardPage() {
 
     if (!activeGroup) {
       return;
+    }
+
+    if (!expenseDescription.trim()) {
+      setError("Enter an expense description");
+      return;
+    }
+
+    if (!isPositiveNumber(expenseAmount)) {
+      setError("Enter a valid expense amount");
+      return;
+    }
+
+    if (!expensePaidById) {
+      setError("Select who paid");
+      return;
+    }
+
+    if (expenseSplitType !== "EQUAL") {
+      const numericValues = activeGroup.members.map((member) => Number(splitValues[member.userId] ?? ""));
+
+      if (numericValues.some((value) => !Number.isFinite(value) || value <= 0)) {
+        setError(expenseSplitType === "EXACT" ? "Enter each member amount" : "Enter each member percentage");
+        return;
+      }
+
+      const total = numericValues.reduce((sum, value) => sum + value, 0);
+
+      if (expenseSplitType === "EXACT" && Math.abs(total - Number(expenseAmount)) > 0.01) {
+        setError("Exact split must match the total amount");
+        return;
+      }
+
+      if (expenseSplitType === "PERCENTAGE" && Math.abs(total - 100) > 0.01) {
+        setError("Percentages must add up to 100");
+        return;
+      }
     }
 
     const splits =
@@ -342,6 +409,12 @@ export default function DashboardPage() {
       setExpenseDescription("");
       setExpenseAmount("");
       setExpenseSplitType("EQUAL");
+      setSplitValues(
+        activeGroup.members.reduce<Record<number, string>>((nextValues, member) => {
+          nextValues[member.userId] = "";
+          return nextValues;
+        }, {})
+      );
     }, "Expense added");
   };
 
@@ -357,6 +430,21 @@ export default function DashboardPage() {
     event.preventDefault();
 
     if (!activeGroup) {
+      return;
+    }
+
+    if (otherMembers.length === 0) {
+      setError("Add another member before recording a settlement");
+      return;
+    }
+
+    if (!settlementPaidToId) {
+      setError("Select who you are paying");
+      return;
+    }
+
+    if (!isPositiveNumber(settlementAmount)) {
+      setError("Enter a valid settlement amount");
       return;
     }
 
@@ -627,6 +715,7 @@ export default function DashboardPage() {
                           onChange={(event) => setMemberEmail(event.target.value)}
                           placeholder="Member email"
                           type="email"
+                          required
                           className="w-full rounded-2xl border border-white/80 bg-white px-4 py-3 text-sm text-slate-700 outline-none"
                         />
                         <button
@@ -637,6 +726,7 @@ export default function DashboardPage() {
                           Add member
                         </button>
                       </form>
+                      <p className="mt-3 text-xs text-slate-400">Use an email that is already registered in the app.</p>
                     </div>
                   </div>
                 </div>
@@ -732,6 +822,7 @@ export default function DashboardPage() {
                         value={expenseDescription}
                         onChange={(event) => setExpenseDescription(event.target.value)}
                         placeholder="Description"
+                        required
                         className="w-full rounded-2xl border border-white/80 bg-white/80 px-4 py-3 text-sm text-slate-700 outline-none"
                       />
                       <input
@@ -741,6 +832,7 @@ export default function DashboardPage() {
                         type="number"
                         min="0"
                         step="0.01"
+                        required
                         className="w-full rounded-2xl border border-white/80 bg-white/80 px-4 py-3 text-sm text-slate-700 outline-none"
                       />
                       <select
@@ -780,6 +872,7 @@ export default function DashboardPage() {
                               type="number"
                               min="0"
                               step="0.01"
+                              required
                               className="w-full rounded-2xl border border-white/80 bg-white/80 px-4 py-3 text-sm text-slate-700 outline-none"
                             />
                           ))}
@@ -848,15 +941,17 @@ export default function DashboardPage() {
                       <select
                         value={settlementPaidToId}
                         onChange={(event) => setSettlementPaidToId(event.target.value)}
+                        disabled={otherMembers.length === 0}
                         className="w-full rounded-2xl border border-white/80 bg-white/80 px-4 py-3 text-sm text-slate-700 outline-none"
                       >
-                        {activeGroup.members
-                          .filter((member) => member.userId !== me.id)
-                          .map((member) => (
-                            <option key={member.id} value={member.userId}>
-                              Pay to {member.user.name}
-                            </option>
-                          ))}
+                        {otherMembers.length === 0 ? (
+                          <option value="">No other member available</option>
+                        ) : null}
+                        {otherMembers.map((member) => (
+                          <option key={member.id} value={member.userId}>
+                            Pay to {member.user.name}
+                          </option>
+                        ))}
                       </select>
                       <input
                         value={settlementAmount}
@@ -865,11 +960,13 @@ export default function DashboardPage() {
                         type="number"
                         min="0"
                         step="0.01"
+                        required
+                        disabled={otherMembers.length === 0}
                         className="w-full rounded-2xl border border-white/80 bg-white/80 px-4 py-3 text-sm text-slate-700 outline-none"
                       />
                       <button
                         type="submit"
-                        disabled={submitting}
+                        disabled={submitting || otherMembers.length === 0}
                         className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white"
                       >
                         Record settlement

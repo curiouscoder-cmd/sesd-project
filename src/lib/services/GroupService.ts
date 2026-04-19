@@ -50,10 +50,10 @@ export class GroupService {
   }
 
   async addMember(groupId: number, input: AddMemberDto, userId: number) {
-    const group = await this.groupRepository.findOwnedGroup(groupId, userId)
+    const group = await this.groupRepository.findAccessibleGroup(groupId, userId)
 
     if (!group) {
-      throw new ForbiddenError("Only the group creator can add members")
+      throw new ForbiddenError("You are not a member of this group")
     }
 
     const userToAdd = await this.userRepository.findPublicByEmail(input.email)
